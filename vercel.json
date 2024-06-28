@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "name": "techinsight-backend",
+  "builds": [{ "src": "./index.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "/" }]
+}
