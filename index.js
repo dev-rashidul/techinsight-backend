@@ -314,9 +314,13 @@ app.post("/blogs/:id/comment", async (req, res) => {
       comment,
     });
 
+    // Explicitly mark the comments array as modified
+    blog.markModified("comments");
+
     // Save the updated blog
     await blog.save();
 
+    // Return the updated blog
     res.status(200).json(blog);
   } catch (error) {
     console.error(error);
@@ -458,15 +462,24 @@ app.delete("/blogs/:id", async (req, res) => {
 // Search blogs route
 app.get("/search", async (req, res) => {
   try {
-    const { query } = req.query;
+    let { query } = req.query;
 
-    // Find blogs that match the query in title or tags
-    const blogs = await Blog.find({
-      $or: [
-        { title: { $regex: query, $options: "i" } }, // Case-insensitive regex search for title
-        { tags: { $regex: query, $options: "i" } }, // Case-insensitive regex search for tags
-      ],
-    });
+    // Trim leading and trailing whitespace from the query
+    query = query.trim();
+
+    // Define search criteria based on query presence
+    let searchCriteria = {};
+    if (query !== "") {
+      searchCriteria = {
+        $or: [
+          { title: { $regex: query, $options: "i" } }, // Case-insensitive regex search for title
+          { tags: { $regex: query, $options: "i" } }, // Case-insensitive regex search for tags
+        ],
+      };
+    }
+
+    // Find blogs based on search criteria
+    const blogs = await Blog.find(searchCriteria);
 
     res.status(200).json(blogs);
   } catch (error) {
